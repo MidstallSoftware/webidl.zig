@@ -4,7 +4,9 @@ const ptk = @import("parser-toolkit");
 const Self = @This();
 const Parser = @import("../Parser.zig");
 
-pub const Error = error{};
+pub const Error = error{
+    UnexpectedSymbol,
+};
 
 location: ptk.Location,
 tag: []const u8,
@@ -12,7 +14,7 @@ message: []const u8,
 
 pub fn pushError(list: *std.ArrayList(Self), err: Parser.Error, ctx: Parser.Context) Allocator.Error!void {
     const msg = try (switch (err) {
-        error.UnexpectedToken => std.fmt.allocPrint(list.allocator, "Expected token {?}, got token {?}", .{ ctx.expectedToken, ctx.token }),
+        error.UnexpectedToken, error.UnexpectedSymbol => std.fmt.allocPrint(list.allocator, "Expected {?}, got {?}", .{ ctx.expected, ctx.got }),
         else => std.fmt.allocPrint(list.allocator, "Internal error", .{}),
     });
     errdefer list.allocator.free(msg);

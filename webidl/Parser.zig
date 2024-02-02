@@ -9,30 +9,37 @@ pub const productions = @import("Parser/productions.zig");
 
 pub const TokenType = enum {
     whitespace,
+    linefeed,
     int,
     float,
-    typedef,
+    symbol,
     identifier,
-    @"or",
+    string,
+    @"=",
+    @"+",
+    @"-",
     @"(",
     @")",
     @";",
-    string,
 };
 
 const Pattern = ptk.Pattern(TokenType);
 pub const ruleset = ptk.RuleSet(TokenType);
 
 pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
+    Pattern.create(.symbol, struct {
+        fn func(input: []const u8) ?usize {
+            if (std.meta.stringToEnum(productions.Symbol.Type, input)) |e| {
+                return @tagName(e).len;
+            }
+            return null;
+        }
+    }.func),
     Pattern.create(.whitespace, ptk.matchers.whitespace),
+    Pattern.create(.linefeed, ptk.matchers.linefeed),
     Pattern.create(.int, ptk.matchers.decimalNumber),
     Pattern.create(.float, ptk.matchers.sequenceOf(.{ ptk.matchers.decimalNumber, ptk.matchers.literal("."), ptk.matchers.decimalNumber })),
-    Pattern.create(.typedef, ptk.matchers.literal("typedef")),
     Pattern.create(.identifier, ptk.matchers.identifier),
-    Pattern.create(.@"or", ptk.matchers.literal("or")),
-    Pattern.create(.@"(", ptk.matchers.literal("(")),
-    Pattern.create(.@")", ptk.matchers.literal(")")),
-    Pattern.create(.@";", ptk.matchers.literal(";")),
     Pattern.create(.string, struct {
         fn func(input: []const u8) ?usize {
             if (input[0] == '"') {
@@ -43,9 +50,15 @@ pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
             return null;
         }
     }.func),
+    Pattern.create(.@"=", ptk.matchers.literal("=")),
+    Pattern.create(.@"+", ptk.matchers.literal("+")),
+    Pattern.create(.@"-", ptk.matchers.literal("-")),
+    Pattern.create(.@"(", ptk.matchers.literal("(")),
+    Pattern.create(.@")", ptk.matchers.literal(")")),
+    Pattern.create(.@";", ptk.matchers.literal(";")),
 });
 
-pub const ParserCore = ptk.ParserCore(Tokenizer, .{.whitespace});
+pub const ParserCore = ptk.ParserCore(Tokenizer, .{ .whitespace, .linefeed });
 pub const Error = ParserCore.Error || Allocator.Error || Message.Error;
 
 allocator: Allocator,
@@ -70,8 +83,6 @@ pub fn getContext(self: *Self, messages: *std.ArrayList(Message)) Context {
     return .{
         .core = &self.core,
         .state = self.core.saveState(),
-        .expectedToken = null,
-        .token = null,
         .messages = messages,
     };
 }
