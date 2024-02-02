@@ -41,7 +41,7 @@ expected: ?ValueType = null,
 got: ?ValueType = null,
 messages: *std.ArrayList(Parser.Message),
 
-fn reset(self: *Self) void {
+pub fn reset(self: *Self) void {
     self.expected = null;
     self.got = null;
 }

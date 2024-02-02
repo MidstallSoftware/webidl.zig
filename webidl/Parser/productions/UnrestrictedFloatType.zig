@@ -5,33 +5,41 @@ const FloatType = @import("FloatType.zig");
 const UnrestrictedFloatType = @This();
 
 type: FloatType,
+isUnrestricted: bool,
 location: ptk.Location,
 
 pub fn peek(parser: *Parser, messages: *std.ArrayList(Parser.Message)) Parser.Error!?UnrestrictedFloatType {
     var ctx = parser.getContext(messages);
     defer parser.restoreContext(ctx);
 
-    _ = try ctx.expectSymbolPeek(.unrestricted) orelse return null;
-    const token = try ctx.expectSymbolAccept(.unrestricted);
-    const subtype = try FloatType.peek(parser, messages) orelse return null;
+    var self: UnrestrictedFloatType = undefined;
 
-    return .{
-        .location = token.location,
-        .type = subtype,
-    };
+    if (try ctx.expectSymbolPeek(.unrestricted)) |token| {
+        _ = try ctx.expectSymbolAccept(.unrestricted);
+        self.location = token.location;
+        self.isUnrestricted = true;
+    }
+
+    self.type = try FloatType.peek(parser, messages) orelse return null;
+    if (!self.isUnrestricted) self.location = self.type.location;
+    return self;
 }
 
 pub fn accept(parser: *Parser, messages: *std.ArrayList(Parser.Message)) Parser.Error!UnrestrictedFloatType {
     var ctx = parser.getContext(messages);
     errdefer parser.restoreContext(ctx);
 
-    const token = try ctx.expectSymbolAccept(.unrestricted);
-    const subtype = try FloatType.accept(parser, messages);
+    var self: UnrestrictedFloatType = undefined;
 
-    return .{
-        .location = token.location,
-        .type = subtype,
-    };
+    if (try ctx.expectSymbolPeek(.unrestricted)) |token| {
+        _ = try ctx.expectSymbolAccept(.unrestricted);
+        self.location = token.location;
+        self.isUnrestricted = true;
+    }
+
+    self.type = try FloatType.accept(parser, messages);
+    if (!self.isUnrestricted) self.location = self.type.location;
+    return self;
 }
 
 test "Parse unrestricted float type double" {
@@ -54,6 +62,7 @@ test "Parse unrestricted float type double" {
         .column = 1,
         .line = 1,
     }, value.location);
+    try std.testing.expectEqual(true, value.isUnrestricted);
     try std.testing.expectEqual(FloatType.Type.double, value.type.type);
 }
 
@@ -77,5 +86,6 @@ test "Parse unrestricted float type float" {
         .column = 1,
         .line = 1,
     }, value.location);
+    try std.testing.expectEqual(true, value.isUnrestricted);
     try std.testing.expectEqual(FloatType.Type.float, value.type.type);
 }
