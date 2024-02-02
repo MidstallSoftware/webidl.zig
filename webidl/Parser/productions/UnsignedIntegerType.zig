@@ -13,7 +13,7 @@ pub fn peek(parser: *Parser, messages: *std.ArrayList(Parser.Message)) Parser.Er
 
     _ = try ctx.expectSymbolPeek(.unsigned) orelse return null;
     const token = try ctx.expectSymbolAccept(.unsigned);
-    const subtype = try IntegerType.accept(parser, messages);
+    const subtype = try IntegerType.peek(parser, messages) orelse return null;
 
     return .{
         .location = token.location,
@@ -50,7 +50,7 @@ pub fn minInt(self: UnsignedIntegerType) isize {
     };
 }
 
-test "Parse integer type long" {
+test "Parse unsigned integer type long" {
     const alloc = std.testing.allocator;
 
     var messages = std.ArrayList(Parser.Message).init(alloc);
@@ -75,7 +75,7 @@ test "Parse integer type long" {
     try std.testing.expectEqual(std.math.minInt(c_ulong), value.minInt());
 }
 
-test "Parse integer type short" {
+test "Parse unsigned integer type short" {
     const alloc = std.testing.allocator;
 
     var messages = std.ArrayList(Parser.Message).init(alloc);
@@ -100,7 +100,7 @@ test "Parse integer type short" {
     try std.testing.expectEqual(std.math.minInt(c_ushort), value.minInt());
 }
 
-test "Parse integer type long long" {
+test "Parse unsigned integer type long long" {
     const alloc = std.testing.allocator;
 
     var messages = std.ArrayList(Parser.Message).init(alloc);
