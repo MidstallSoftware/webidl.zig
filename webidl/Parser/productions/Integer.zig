@@ -4,8 +4,8 @@ const Parser = @import("../../Parser.zig");
 const Integer = @This();
 
 pub const Value = union(std.builtin.Signedness) {
-    unsigned: u64,
     signed: i64,
+    unsigned: u64,
 
     pub fn parse(sign: std.builtin.Signedness, text: []const u8) !Value {
         return if (sign == .signed) .{
