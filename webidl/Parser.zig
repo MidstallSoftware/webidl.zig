@@ -17,6 +17,7 @@ pub const TokenType = enum {
     @"(",
     @")",
     @";",
+    string,
 };
 
 const Pattern = ptk.Pattern(TokenType);
@@ -32,6 +33,16 @@ pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
     Pattern.create(.@"(", ptk.matchers.literal("(")),
     Pattern.create(.@")", ptk.matchers.literal(")")),
     Pattern.create(.@";", ptk.matchers.literal(";")),
+    Pattern.create(.string, struct {
+        fn func(input: []const u8) ?usize {
+            if (input[0] == '"') {
+                if (std.mem.indexOf(u8, input[1..], "\"")) |i| {
+                    return i + 2;
+                }
+            }
+            return null;
+        }
+    }.func),
 });
 
 pub const ParserCore = ptk.ParserCore(Tokenizer, .{.whitespace});
