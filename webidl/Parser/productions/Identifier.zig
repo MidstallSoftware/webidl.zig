@@ -21,7 +21,7 @@ pub fn accept(parser: *Parser, messages: *std.ArrayList(Parser.Message)) Parser.
     var ctx = parser.getContext(messages);
     errdefer parser.restoreContext(ctx);
 
-    const token = try ctx.expectTokenAccept(.identifier) orelse return null;
+    const token = try ctx.expectTokenAccept(.identifier);
     return .{
         .location = token.location,
         .name = token.text,

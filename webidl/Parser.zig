@@ -20,7 +20,10 @@ pub const TokenType = enum {
     @"-",
     @"(",
     @")",
+    @"{",
+    @"}",
     @";",
+    @"?",
 };
 
 const Pattern = ptk.Pattern(TokenType);
@@ -69,11 +72,14 @@ pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
     Pattern.create(.@"-", ptk.matchers.literal("-")),
     Pattern.create(.@"(", ptk.matchers.literal("(")),
     Pattern.create(.@")", ptk.matchers.literal(")")),
+    Pattern.create(.@"{", ptk.matchers.literal("{")),
+    Pattern.create(.@"}", ptk.matchers.literal("}")),
     Pattern.create(.@";", ptk.matchers.literal(";")),
+    Pattern.create(.@"?", ptk.matchers.literal("?")),
 });
 
 pub const ParserCore = ptk.ParserCore(Tokenizer, .{ .whitespace, .linefeed });
-pub const Error = ParserCore.Error || Allocator.Error || Message.Error;
+pub const Error = ParserCore.Error || Allocator.Error || Message.Error || std.fmt.ParseIntError;
 
 allocator: Allocator,
 core: ParserCore,
