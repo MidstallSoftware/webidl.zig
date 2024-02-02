@@ -26,20 +26,34 @@ pub const TokenType = enum {
 const Pattern = ptk.Pattern(TokenType);
 pub const ruleset = ptk.RuleSet(TokenType);
 
-pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
-    Pattern.create(.symbol, struct {
-        fn func(input: []const u8) ?usize {
-            if (std.meta.stringToEnum(productions.Symbol.Type, input)) |e| {
-                return @tagName(e).len;
-            }
-            return null;
+fn identifier(input: []const u8) usize {
+    const first_char = "-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const all_chars = first_char ++ "0123456789";
+    for (input, 0..) |c, i| {
+        if (std.mem.indexOfScalar(u8, if (i > 0) all_chars else first_char, c) == null) {
+            return i;
         }
-    }.func),
+    }
+    return input.len;
+}
+
+pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
     Pattern.create(.whitespace, ptk.matchers.whitespace),
     Pattern.create(.linefeed, ptk.matchers.linefeed),
     Pattern.create(.int, ptk.matchers.decimalNumber),
     Pattern.create(.float, ptk.matchers.sequenceOf(.{ ptk.matchers.decimalNumber, ptk.matchers.literal("."), ptk.matchers.decimalNumber })),
-    Pattern.create(.identifier, ptk.matchers.identifier),
+    Pattern.create(.symbol, struct {
+        fn func(input: []const u8) ?usize {
+            const i = identifier(input);
+            return if (std.meta.stringToEnum(productions.Symbol.Type, input[0..i])) |_| i else null;
+        }
+    }.func),
+    Pattern.create(.identifier, struct {
+        fn func(input: []const u8) ?usize {
+            const i = identifier(input);
+            return if (std.meta.stringToEnum(productions.Symbol.Type, input[0..i])) |_| null else i;
+        }
+    }.func),
     Pattern.create(.string, struct {
         fn func(input: []const u8) ?usize {
             if (input[0] == '"') {

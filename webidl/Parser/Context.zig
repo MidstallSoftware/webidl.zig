@@ -117,7 +117,7 @@ pub fn expectTokensAccept(self: *Self, comptime tokens: []const Parser.TokenType
 
 pub fn expectSymbolPeek(self: *Self, expected: Symbol.Type) Parser.Error!?Parser.Tokenizer.Token {
     defer self.reset();
-    if (try self.expectTokensPeek(&.{ .symbol, .identifier })) |sym| {
+    if (try self.expectTokenPeek(.symbol)) |sym| {
         self.expected = .{ .symbol = expected };
 
         if (std.meta.stringToEnum(Symbol.Type, sym.text)) |symValue| {
@@ -131,7 +131,7 @@ pub fn expectSymbolPeek(self: *Self, expected: Symbol.Type) Parser.Error!?Parser
 pub fn expectSymbolAccept(self: *Self, expected: Symbol.Type) Parser.Error!Parser.Tokenizer.Token {
     defer self.reset();
 
-    const sym = try self.expectTokensAccept(&.{ .symbol, .identifier });
+    const sym = try self.expectTokenAccept(.symbol);
     self.expected = .{ .symbol = expected };
 
     if (std.meta.stringToEnum(Symbol.Type, sym.text)) |symValue| {
@@ -146,7 +146,7 @@ pub fn expectSymbolAccept(self: *Self, expected: Symbol.Type) Parser.Error!Parse
 
 pub fn expectSymbolsPeek(self: *Self, expected: []const Symbol.Type) Parser.Error!?Parser.Tokenizer.Token {
     defer self.reset();
-    if (try self.expectTokensPeek(&.{ .symbol, .identifier })) |sym| {
+    if (try self.expectTokenPeek(.symbol)) |sym| {
         self.expected = .{ .symbols = expected };
 
         if (std.meta.stringToEnum(Symbol.Type, sym.text)) |symValue| {
@@ -162,7 +162,7 @@ pub fn expectSymbolsPeek(self: *Self, expected: []const Symbol.Type) Parser.Erro
 pub fn expectSymbolsAccept(self: *Self, expected: []const Symbol.Type) Parser.Error!Parser.Tokenizer.Token {
     defer self.reset();
 
-    const sym = try self.expectTokensAccept(&.{ .symbol, .identifier });
+    const sym = try self.expectTokenAccept(.symbol);
     self.expected = .{ .symbols = expected };
 
     if (std.meta.stringToEnum(Symbol.Type, sym.text)) |symValue| {
