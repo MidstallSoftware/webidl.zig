@@ -6,12 +6,13 @@ const Self = @This();
 pub const Message = @import("Parser/Message.zig");
 pub const Context = @import("Parser/Context.zig");
 pub const productions = @import("Parser/productions.zig");
+pub const matchers = @import("Parser/matchers.zig");
 
 pub const TokenType = enum {
     whitespace,
     linefeed,
-    int,
     float,
+    int,
     symbol,
     identifier,
     string,
@@ -29,53 +30,14 @@ pub const TokenType = enum {
 const Pattern = ptk.Pattern(TokenType);
 pub const ruleset = ptk.RuleSet(TokenType);
 
-fn identifier(input: []const u8) usize {
-    const first_char = "-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const all_chars = first_char ++ "0123456789";
-    for (input, 0..) |c, i| {
-        if (std.mem.indexOfScalar(u8, if (i > 0 and input[0] != '-') all_chars else first_char, c) == null) {
-            return i;
-        }
-    }
-    return input.len;
-}
-
 pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
     Pattern.create(.whitespace, ptk.matchers.whitespace),
     Pattern.create(.linefeed, ptk.matchers.linefeed),
-    Pattern.create(.int, ptk.matchers.decimalNumber),
-    Pattern.create(.float, ptk.matchers.sequenceOf(.{ ptk.matchers.decimalNumber, ptk.matchers.literal("."), ptk.matchers.decimalNumber })),
-    Pattern.create(.symbol, struct {
-        fn func(input: []const u8) ?usize {
-            const i = identifier(input);
-            return if (std.meta.stringToEnum(productions.Symbol.Type, input[0..i])) |_| i else null;
-        }
-    }.func),
-    Pattern.create(.identifier, struct {
-        fn func(input: []const u8) ?usize {
-            const i = identifier(input);
-            if (input[0] == '-') {
-                var digits: usize = 0;
-                for (input[1..i]) |ch| {
-                    if (std.ascii.isDigit(ch)) {
-                        digits += 1;
-                    }
-                }
-                if (digits == (i - 1)) return null;
-            }
-            return if (std.meta.stringToEnum(productions.Symbol.Type, input[0..i])) |_| null else i;
-        }
-    }.func),
-    Pattern.create(.string, struct {
-        fn func(input: []const u8) ?usize {
-            if (input[0] == '"') {
-                if (std.mem.indexOf(u8, input[1..], "\"")) |i| {
-                    return i + 2;
-                }
-            }
-            return null;
-        }
-    }.func),
+    Pattern.create(.float, matchers.float),
+    Pattern.create(.int, matchers.int),
+    Pattern.create(.symbol, matchers.symbol),
+    Pattern.create(.identifier, matchers.identifier),
+    Pattern.create(.string, matchers.string),
     Pattern.create(.@"=", ptk.matchers.literal("=")),
     Pattern.create(.@"+", ptk.matchers.literal("+")),
     Pattern.create(.@"-", ptk.matchers.literal("-")),
@@ -88,7 +50,7 @@ pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
 });
 
 pub const ParserCore = ptk.ParserCore(Tokenizer, .{ .whitespace, .linefeed });
-pub const Error = ParserCore.Error || Allocator.Error || Message.Error || std.fmt.ParseIntError;
+pub const Error = ParserCore.Error || Allocator.Error || Message.Error || std.fmt.ParseIntError || std.fmt.ParseFloatError;
 
 allocator: Allocator,
 core: ParserCore,
@@ -124,4 +86,5 @@ test {
     _ = Context;
     _ = Message;
     _ = productions;
+    _ = matchers;
 }

@@ -14,7 +14,7 @@ message: []const u8,
 
 pub fn pushError(list: *std.ArrayList(Self), err: Parser.Error, ctx: Parser.Context) Allocator.Error!void {
     const msg = try (switch (err) {
-        error.UnexpectedToken, error.UnexpectedSymbol => std.fmt.allocPrint(list.allocator, "Expected {?}, got {?}", .{ ctx.expected, ctx.got }),
+        error.UnexpectedToken, error.UnexpectedSymbol, error.UnexpectedCharacter => std.fmt.allocPrint(list.allocator, "Expected {?}, got {?}", .{ ctx.expected, ctx.got }),
         else => std.fmt.allocPrint(list.allocator, "Internal error", .{}),
     });
     errdefer list.allocator.free(msg);

@@ -1,4 +1,5 @@
 pub const ConstType = @import("productions/ConstType.zig");
+pub const FloatLiteral = @import("productions/FloatLiteral.zig");
 pub const FloatType = @import("productions/FloatType.zig");
 pub const Identifier = @import("productions/Identifier.zig");
 pub const Integer = @import("productions/Integer.zig");
@@ -11,6 +12,7 @@ pub const UnsignedIntegerType = @import("productions/UnsignedIntegerType.zig");
 
 test {
     _ = ConstType;
+    _ = FloatLiteral;
     _ = FloatType;
     _ = Identifier;
     _ = Integer;

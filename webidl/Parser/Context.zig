@@ -8,6 +8,7 @@ pub const ValueType = union(enum) {
     tokens: []const Parser.TokenType,
     symbol: Symbol.Type,
     symbols: []const Symbol.Type,
+    text: []const u8,
 
     pub fn format(self: ValueType, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
         _ = fmt;
@@ -23,8 +24,14 @@ pub const ValueType = union(enum) {
 
                 if (@typeInfo(Value) == .Pointer or @typeInfo(Value) == .Array) {
                     for (value, 0..) |item, x| {
-                        try writer.writeAll(@tagName(item));
-                        if ((x + 1) < value.len) try writer.writeAll(", ");
+                        const Item = @TypeOf(item);
+
+                        if (Item == u8) {
+                            try writer.writeByte(item);
+                        } else {
+                            try writer.writeAll(@tagName(item));
+                            if ((x + 1) < value.len) try writer.writeAll(", ");
+                        }
                     }
                 } else {
                     try writer.writeAll(@tagName(value));
@@ -47,6 +54,9 @@ pub fn reset(self: *Self) void {
 }
 
 pub fn pushError(self: *Self, err: Parser.Error) !void {
+    if (err == error.UnexpectedCharacter) {
+        self.got = .{ .text = self.core.tokenizer.source[self.core.tokenizer.offset..] };
+    }
     try Parser.Message.pushError(self.messages, err, self.*);
 }
 

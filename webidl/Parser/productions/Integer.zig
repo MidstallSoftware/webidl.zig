@@ -9,9 +9,9 @@ pub const Value = union(std.builtin.Signedness) {
 
     pub fn parse(sign: std.builtin.Signedness, text: []const u8) !Value {
         return if (sign == .signed) .{
-            .signed = try std.fmt.parseInt(i64, text, 10) * -1,
+            .signed = try std.fmt.parseInt(i64, text, 0) * -1,
         } else .{
-            .unsigned = try std.fmt.parseInt(u64, text, 10),
+            .unsigned = try std.fmt.parseInt(u64, text, 0),
         };
     }
 };
@@ -105,4 +105,52 @@ test "Parse integer unsigned" {
     }, value.location);
     try std.testing.expectEqual(std.builtin.Signedness.unsigned, std.meta.activeTag(value.value));
     try std.testing.expectEqual(@as(u64, 100), value.value.unsigned);
+}
+
+test "Parse integer unsigned hexadecimal" {
+    const alloc = std.testing.allocator;
+
+    var messages = std.ArrayList(Parser.Message).init(alloc);
+    defer Parser.Message.deinit(&messages);
+
+    var parser = try Parser.init(alloc,
+        \\0xa1b2c3
+    );
+    defer parser.deinit();
+
+    const value = accept(&parser, &messages) catch |err| {
+        for (messages.items) |item| std.debug.print("{}\n", .{item});
+        return err;
+    };
+
+    try std.testing.expectEqual(ptk.Location{
+        .column = 1,
+        .line = 1,
+    }, value.location);
+    try std.testing.expectEqual(std.builtin.Signedness.unsigned, std.meta.activeTag(value.value));
+    try std.testing.expectEqual(@as(u64, 0xa1b2c3), value.value.unsigned);
+}
+
+test "Parse integer signed hexadecimal" {
+    const alloc = std.testing.allocator;
+
+    var messages = std.ArrayList(Parser.Message).init(alloc);
+    defer Parser.Message.deinit(&messages);
+
+    var parser = try Parser.init(alloc,
+        \\-0xa1b2c3
+    );
+    defer parser.deinit();
+
+    const value = accept(&parser, &messages) catch |err| {
+        for (messages.items) |item| std.debug.print("{}\n", .{item});
+        return err;
+    };
+
+    try std.testing.expectEqual(ptk.Location{
+        .column = 1,
+        .line = 1,
+    }, value.location);
+    try std.testing.expectEqual(std.builtin.Signedness.signed, std.meta.activeTag(value.value));
+    try std.testing.expectEqual(@as(i64, -0xa1b2c3), value.value.signed);
 }
