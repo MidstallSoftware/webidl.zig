@@ -11,6 +11,7 @@ pub const matchers = @import("Parser/matchers.zig");
 pub const TokenType = enum {
     whitespace,
     linefeed,
+    @",",
     float,
     int,
     symbol,
@@ -33,6 +34,7 @@ pub const ruleset = ptk.RuleSet(TokenType);
 pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
     Pattern.create(.whitespace, ptk.matchers.whitespace),
     Pattern.create(.linefeed, ptk.matchers.linefeed),
+    Pattern.create(.@",", ptk.matchers.literal(",")),
     Pattern.create(.float, matchers.float),
     Pattern.create(.int, matchers.int),
     Pattern.create(.symbol, matchers.symbol),

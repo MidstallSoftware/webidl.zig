@@ -22,7 +22,9 @@ pub fn int(input: []const u8) ?usize {
         }
         return null;
     }
-    return ptk.matchers.decimalNumber(input);
+
+    const i = ptk.matchers.decimalNumber(input) orelse 0;
+    return if (i > 0) i else null;
 }
 
 pub fn symbol(input: []const u8) ?usize {
