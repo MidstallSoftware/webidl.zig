@@ -7,6 +7,7 @@ pub const Identifier = @import("productions/Identifier.zig");
 pub const Integer = @import("productions/Integer.zig");
 pub const IntegerType = @import("productions/IntegerType.zig");
 pub const PrimitiveType = @import("productions/PrimitiveType.zig");
+pub const TypeSuffix = @import("productions/TypeSuffix.zig");
 pub const String = @import("productions/String.zig");
 pub const Symbol = @import("productions/Symbol.zig");
 pub const UnrestrictedFloatType = @import("productions/UnrestrictedFloatType.zig");
@@ -22,6 +23,7 @@ test {
     _ = Integer;
     _ = IntegerType;
     _ = PrimitiveType;
+    _ = TypeSuffix;
     _ = String;
     _ = Symbol;
     _ = UnsignedIntegerType;
