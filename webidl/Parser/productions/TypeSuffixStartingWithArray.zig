@@ -26,7 +26,7 @@ pub fn peek(parser: *Parser, messages: *std.ArrayList(Parser.Message)) Parser.Er
 
 pub fn accept(parser: *Parser, messages: *std.ArrayList(Parser.Message)) Parser.Error!TypeSuffixStartingWithArray {
     var ctx = parser.getContext(messages);
-    defer parser.restoreContext(ctx);
+    errdefer parser.restoreContext(ctx);
 
     const token = try ctx.expectTokenAccept(.@"[");
     _ = try ctx.expectTokenAccept(.@"]");

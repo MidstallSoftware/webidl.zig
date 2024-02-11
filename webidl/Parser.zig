@@ -5,6 +5,7 @@ const Self = @This();
 
 pub const Message = @import("Parser/Message.zig");
 pub const Context = @import("Parser/Context.zig");
+pub const constructs = @import("Parser/constructs.zig");
 pub const productions = @import("Parser/productions.zig");
 pub const matchers = @import("Parser/matchers.zig");
 
@@ -28,6 +29,7 @@ pub const TokenType = enum {
     @"}",
     @";",
     @"?",
+    @"...",
 };
 
 const Pattern = ptk.Pattern(TokenType);
@@ -53,6 +55,7 @@ pub const Tokenizer = ptk.Tokenizer(TokenType, &[_]Pattern{
     Pattern.create(.@"}", ptk.matchers.literal("}")),
     Pattern.create(.@";", ptk.matchers.literal(";")),
     Pattern.create(.@"?", ptk.matchers.literal("?")),
+    Pattern.create(.@"...", ptk.matchers.literal("...")),
 });
 
 pub const ParserCore = ptk.ParserCore(Tokenizer, .{ .whitespace, .linefeed });
@@ -91,6 +94,7 @@ pub fn restoreContext(self: *Self, ctx: Context) void {
 test {
     _ = Context;
     _ = Message;
+    _ = constructs;
     _ = productions;
     _ = matchers;
 }
